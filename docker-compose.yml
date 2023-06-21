@@ -231,7 +231,29 @@ services:
       com.zabbix.company: "Zabbix LLC"
       com.zabbix.component: "zabbix-agentd"
       com.zabbix.os: "ubuntu"
-
+      
+  grafana:
+    image: grafana/grafana:7.5.7
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
+    deploy:
+      resources:
+        limits:
+          cpus: '0.70'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    networks:
+      zbx_net_backend:
+        aliases:
+        - grafana-server
+      zbx_net_frontend:
+      
   db_data_mysql:
     image: busybox
     volumes:
@@ -258,3 +280,4 @@ networks:
 
 volumes:
   snmptraps:
+  grafana-data:
