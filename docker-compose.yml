@@ -194,7 +194,7 @@ services:
         - mysql-database
 
   zabbix-agent:
-    image: zabbix/zabbix-agent:ubuntu-6.4-latest
+    image: zabbix/zabbix-agent2:ubuntu-6.4-latest
     profiles:
       - full
       - all
