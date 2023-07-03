@@ -1,8 +1,23 @@
 version: '3.5'
 
+networks:
+  zbx_net_frontend:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.238.0/24
+  zbx_net_backend:
+    driver: bridge
+    internal: true
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.239.0/24
+
 services:
   zabbix-server:
-    image: zabbix/zabbix-server-mysql:ubuntu-6.4-latest
+    image: docker.io/zabbix/zabbix-server-mysql:ubuntu-6.4-latest
     ports:
       - "10051:10051"
     volumes:
@@ -58,7 +73,7 @@ services:
       com.zabbix.os: "ubuntu"
 
   zabbix-web-nginx-mysql:
-    image: zabbix/zabbix-web-nginx-mysql:ubuntu-6.4-latest
+    image: docker.io/zabbix/zabbix-web-nginx-mysql:ubuntu-6.4-latest
     ports:
       - "8080:8080"
       - "8443:8443"
@@ -107,7 +122,7 @@ services:
       com.zabbix.os: "ubuntu"
 
   zabbix-snmptraps:
-    image: zabbix/zabbix-snmptraps:ubuntu-6.4-latest
+    image: docker.io/zabbix/zabbix-snmptraps:ubuntu-6.4-latest
     profiles:
       - full
       - all
@@ -136,7 +151,7 @@ services:
       com.zabbix.os: "ubuntu"
 
   zabbix-web-service:
-    image: zabbix/zabbix-web-service:ubuntu-6.4-latest
+    image: docker.io/zabbix/zabbix-web-service:ubuntu-6.4-latest
     profiles:
       - full
       - all
@@ -169,7 +184,7 @@ services:
       com.zabbix.os: "ubuntu"
 
   mysql-server:
-    image: mysql:8.0-oracle
+    image: docker.io/mysql:8.0-oracle
     command:
       - mysqld
       - --character-set-server=utf8mb4
@@ -194,7 +209,7 @@ services:
         - mysql-database
 
   zabbix-agent:
-    image: zabbix/zabbix-agent2:ubuntu-6.4-latest
+    image: docker.io/zabbix/zabbix-agent2:ubuntu-6.4-latest
     # profiles:
     #   - full
     #   - all
@@ -233,7 +248,7 @@ services:
       com.zabbix.os: "ubuntu"
       
   grafana:
-    image: grafana/grafana:7.5.7
+    image: docker.io/grafana/grafana:latest
     ports:
       - 3000:3000
     restart: always
@@ -257,28 +272,9 @@ services:
       - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
       
   db_data_mysql:
-    image: busybox
+    image: docker.io/busybox
     volumes:
       - ./dados/var/lib/mysql:/var/lib/mysql:rw
-
-networks:
-  zbx_net_frontend:
-    driver: bridge
-    driver_opts:
-      com.docker.network.enable_ipv6: "false"
-    ipam:
-      driver: default
-      config:
-      - subnet: 172.16.238.0/24
-  zbx_net_backend:
-    driver: bridge
-    driver_opts:
-      com.docker.network.enable_ipv6: "false"
-    internal: true
-    ipam:
-      driver: default
-      config:
-      - subnet: 172.16.239.0/24
 
 volumes:
   snmptraps:
