@@ -15,9 +15,13 @@ networks:
       config:
       - subnet: 172.16.239.0/24
 
+volumes:
+  snmptraps:
+  grafana-data:
+
 services:
   zabbix-server:
-    image: docker.io/zabbix/zabbix-server-mysql:ubuntu-6.4-latest
+    image: docker.io/zabbix/zabbix-server-mysql:alpine-6.0-latest
     ports:
       - "10051:10051"
     volumes:
@@ -73,7 +77,7 @@ services:
       com.zabbix.os: "ubuntu"
 
   zabbix-web-nginx-mysql:
-    image: docker.io/zabbix/zabbix-web-nginx-mysql:ubuntu-6.4-latest
+    image: docker.io/zabbix/zabbix-web-nginx-mysql:alpine-6.0-latest
     ports:
       - "8080:8080"
       - "8443:8443"
@@ -122,7 +126,7 @@ services:
       com.zabbix.os: "ubuntu"
 
   zabbix-snmptraps:
-    image: docker.io/zabbix/zabbix-snmptraps:ubuntu-6.4-latest
+    image: docker.io/zabbix/zabbix-snmptraps:alpine-6.0-latest
     profiles:
       - full
       - all
@@ -151,9 +155,8 @@ services:
       com.zabbix.os: "ubuntu"
 
   zabbix-web-service:
-    image: docker.io/zabbix/zabbix-web-service:ubuntu-6.4-latest
+    image: docker.io/zabbix/zabbix-web-service:alpine-6.0-latest
     profiles:
-      - full
       - all
     ports:
        - "10053:10053"
@@ -209,10 +212,10 @@ services:
         - mysql-database
 
   zabbix-agent:
-    image: docker.io/zabbix/zabbix-agent2:ubuntu-6.4-latest
-    # profiles:
-    #   - full
-    #   - all
+    image: docker.io/zabbix/zabbix-agent2:alpine-6.0-latest
+    profiles:
+      - full
+      - all
     ports:
      - "10050:10050"
     volumes:
@@ -232,6 +235,7 @@ services:
       mode: global
     environment:
       - ZBX_SERVER_HOST=zabbix-server
+      - ZBX_HOSTNAME=agent-host
     privileged: true
     pid: "host"
     networks:
@@ -275,7 +279,3 @@ services:
     image: docker.io/busybox
     volumes:
       - ./dados/var/lib/mysql:/var/lib/mysql:rw
-
-volumes:
-  snmptraps:
-  grafana-data:
