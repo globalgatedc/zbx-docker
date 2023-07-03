@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2023-07-03T20:19:56Z</date>
+    <groups>
+        <group>
+            <name>Templates/GGDC</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>GGDC Agent Info</template>
+            <name>GGDC Agent Info</name>
+            <groups>
+                <group>
+                    <name>Templates/GGDC</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Agent Info</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>agent_ver</name>
+                    <key>agent.version</key>
+                    <delay>10m</delay>
+                    <history>1d</history>
+                    <trends>0</trends>
+                    <value_type>CHAR</value_type>
+                    <description>Versão do agente instalado.</description>
+                    <applications>
+                        <application>
+                            <name>Agent Info</name>
+                        </application>
+                    </applications>
+                </item>
+            </items>
+        </template>
+        <template>
+            <template>GGDC Geral Linux</template>
+            <name>GGDC Geral Linux</name>
+            <groups>
+                <group>
+                    <name>Templates/GGDC</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Agente</name>
+                </application>
+                <application>
+                    <name>Disco</name>
+                </application>
+                <application>
+                    <name>Memória</name>
+                </application>
+                <application>
+                    <name>Processador</name>
+                </application>
+                <application>
+                    <name>Rede</name>
+                </application>
+                <application>
+                    <name>Serviço</name>
+                </application>
+                <application>
+                    <name>Sistema</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Agent_ping</name>
+                    <key>agent.ping</key>
+                    <delay>3m</delay>
+                    <history>7d</history>
+                    <description>Disponibilidade do Zabbix Agent.</description>
+                    <applications>
+                        <application>
+                            <name>Agente</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{nodata(6m)}=1</expression>
+                            <name>ZABBIX AGENT: Não respondendo!</name>
+                            <priority>DISASTER</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Ping_IP</name>
+                    <type>SIMPLE</type>
+                    <key>icmpping[{HOST.IP},3]</key>
+                    <delay>3m</delay>
+                    <history>7d</history>
+                    <description>Ping com 03 pacotes;&#13;
+Retorna positivo (1) se pelo menos um pacote responder.</description>
+                    <applications>
+                        <application>
+                            <name>Rede</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{sum(#5)}=0</expression>
+                            <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
+                            <recovery_expression>{sum(#2)}=2</recovery_expression>
+                            <name>PING: Dispositivo off-line por mais de 15 minutos!</name>
+                            <priority>DISASTER</priority>
+                            <description>Problema: Sem resposta nos últimos 5 pings.&#13;
+Recuperação: Positivo nos últimos 2 pings.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>%_CPU</name>
+                    <key>system.cpu.util[all,system]</key>
+                    <delay>5m</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Porcentagem em uso das CPUs;&#13;
+Média convertida em %.</description>
+                    <applications>
+                        <application>
+                            <name>Processador</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{avg(#12)}&gt;=95</expression>
+                            <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
+                            <recovery_expression>{avg(#3)}&lt;90</recovery_expression>
+                            <name>CPU: 95% de uso na última hora!</name>
+                            <priority>HIGH</priority>
+                            <description>Problema: Média maior ou igual a 95% de uso de processador na última hora.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Uptime</name>
+                    <key>system.uptime</key>
+                    <delay>10m</delay>
+                    <history>7d</history>
+                    <units>s</units>
+                    <description>Tempo de atividade do sistema operacional.</description>
+                    <applications>
+                        <application>
+                            <name>Sistema</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>%_Mem</name>
+                    <key>vm.memory.size[pused]</key>
+                    <delay>5m</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Porcentagem em uso da memória RAM.</description>
+                    <applications>
+                        <application>
+                            <name>Memória</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{avg(#12)}&gt;=99</expression>
+                            <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
+                            <recovery_expression>{avg(#3)}&lt;97</recovery_expression>
+                            <name>MEMÓRIA: 99% de uso atingido na última hora!</name>
+                            <priority>HIGH</priority>
+                            <description>Problema: Média maior ou igual a 99% de uso de memória nas últimas 12 coletas.&#13;
+Recuperação: Média menor que 97% de uso de memória nas últimas 03 coletas.</description>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <name>Descoberta de partições</name>
+                    <key>vfs.fs.discovery</key>
+                    <delay>1h</delay>
+                    <filter>
+                        <evaltype>AND</evaltype>
+                        <conditions>
+                            <condition>
+                                <macro>{#FSTYPE}</macro>
+                                <value>@File systems for discovery</value>
+                                <formulaid>B</formulaid>
+                            </condition>
+                            <condition>
+                                <macro>{#FSNAME}</macro>
+                                <value>(docker|kubelet|pods|kubernetes|elasticsearch)</value>
+                                <operator>NOT_MATCHES_REGEX</operator>
+                                <formulaid>A</formulaid>
+                            </condition>
+                        </conditions>
+                    </filter>
+                    <lifetime>8d</lifetime>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Partição {#FSNAME}</name>
+                            <key>vfs.fs.size[{#FSNAME},pused]</key>
+                            <delay>5m</delay>
+                            <history>8d</history>
+                            <value_type>FLOAT</value_type>
+                            <units>%</units>
+                            <applications>
+                                <application>
+                                    <name>Disco</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=90</expression>
+                                    <name>DISCO: Partição {#FSNAME} atingiu 90% da capacidade!</name>
+                                    <priority>WARNING</priority>
+                                    <dependencies>
+                                        <dependency>
+                                            <name>DISCO: Partição {#FSNAME} atingiu 95% da capacidade!</name>
+                                            <expression>{GGDC Geral Linux:vfs.fs.size[{#FSNAME},pused].last()}&gt;=95</expression>
+                                        </dependency>
+                                    </dependencies>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=95</expression>
+                                    <name>DISCO: Partição {#FSNAME} atingiu 95% da capacidade!</name>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                    </item_prototypes>
+                </discovery_rule>
+            </discovery_rules>
+        </template>
+        <template>
+            <template>GGDC Geral Windows</template>
+            <name>GGDC Geral Windows</name>
+            <groups>
+                <group>
+                    <name>Templates/GGDC</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Agente</name>
+                </application>
+                <application>
+                    <name>Disco</name>
+                </application>
+                <application>
+                    <name>Memória</name>
+                </application>
+                <application>
+                    <name>Processador</name>
+                </application>
+                <application>
+                    <name>Rede</name>
+                </application>
+                <application>
+                    <name>Serviço</name>
+                </application>
+                <application>
+                    <name>Sistema</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Agent_ping</name>
+                    <key>agent.ping</key>
+                    <delay>3m</delay>
+                    <history>7d</history>
+                    <description>Disponibilidade do Zabbix Agent.</description>
+                    <applications>
+                        <application>
+                            <name>Agente</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{nodata(6m)}=1</expression>
+                            <name>ZABBIX AGENT: Não respondendo!</name>
+                            <priority>DISASTER</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Ping_IP</name>
+                    <type>SIMPLE</type>
+                    <key>icmpping[{HOST.IP},3]</key>
+                    <delay>3m</delay>
+                    <history>7d</history>
+                    <description>Ping com 03 pacotes;&#13;
+Retorna positivo (1) se pelo menos um pacote responder.</description>
+                    <applications>
+                        <application>
+                            <name>Rede</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{sum(#5)}=0</expression>
+                            <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
+                            <recovery_expression>{sum(#2)}=2</recovery_expression>
+                            <name>PING: Dispositivo off-line por mais de 15 minutos!</name>
+                            <priority>DISASTER</priority>
+                            <description>Problema: Sem resposta nos últimos 5 pings.&#13;
+Recuperação: Positivo nos últimos 2 pings.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>%_CPU</name>
+                    <key>system.cpu.util[all,system]</key>
+                    <delay>5m</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Porcentagem em uso das CPUs;&#13;
+Média convertida em %.</description>
+                    <applications>
+                        <application>
+                            <name>Processador</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{avg(#12)}&gt;=95</expression>
+                            <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
+                            <recovery_expression>{avg(#3)}&lt;90</recovery_expression>
+                            <name>CPU: 95% de uso na última hora!</name>
+                            <priority>HIGH</priority>
+                            <description>Problema: Média maior ou igual a 95% de uso de processador na última hora.</description>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Uptime</name>
+                    <key>system.uptime</key>
+                    <delay>10m</delay>
+                    <history>7d</history>
+                    <units>s</units>
+                    <description>Tempo de atividade do sistema operacional.</description>
+                    <applications>
+                        <application>
+                            <name>Sistema</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>%_Mem</name>
+                    <key>vm.memory.size[pused]</key>
+                    <delay>5m</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Porcentagem em uso da memória RAM.</description>
+                    <applications>
+                        <application>
+                            <name>Memória</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{avg(#12)}&gt;=99</expression>
+                            <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
+                            <recovery_expression>{avg(#3)}&lt;97</recovery_expression>
+                            <name>MEMÓRIA: 99% de uso atingido na última hora!</name>
+                            <priority>HIGH</priority>
+                            <description>Problema: Média maior ou igual a 99% de uso de memória nas últimas 12 coletas.&#13;
+Recuperação: Média menor que 97% de uso de memória nas últimas 03 coletas.</description>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <name>Descoberta de serviços</name>
+                    <key>service.discovery</key>
+                    <delay>1h</delay>
+                    <filter>
+                        <conditions>
+                            <condition>
+                                <macro>{#SERVICE.STARTUP}</macro>
+                                <value>0|1</value>
+                                <formulaid>A</formulaid>
+                            </condition>
+                        </conditions>
+                    </filter>
+                    <lifetime>2d</lifetime>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Serviço {#SERVICE.NAME}</name>
+                            <key>service.info[{#SERVICE.NAME},state]</key>
+                            <delay>5m</delay>
+                            <history>8d</history>
+                            <applications>
+                                <application>
+                                    <name>Serviço</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{sum(#3)}&gt;=3</expression>
+                                    <name>SERVIÇO: {#SERVICE.NAME} não está rodando!</name>
+                                    <status>DISABLED</status>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                    </item_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <name>Descoberta de unidades de Disco</name>
+                    <key>vfs.fs.discovery</key>
+                    <delay>1h</delay>
+                    <lifetime>8d</lifetime>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Unidade de disco {#FSNAME}</name>
+                            <key>vfs.fs.size[{#FSNAME},pused]</key>
+                            <delay>5m</delay>
+                            <history>8d</history>
+                            <value_type>FLOAT</value_type>
+                            <units>%</units>
+                            <description>Porcentagem em uso da capacidade das unidades de disco.</description>
+                            <applications>
+                                <application>
+                                    <name>Disco</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=90</expression>
+                                    <name>DISCO: Unidade {#FSNAME} atingiu 90% da capacidade!</name>
+                                    <priority>WARNING</priority>
+                                    <dependencies>
+                                        <dependency>
+                                            <name>DISCO: Unidade {#FSNAME} atingiu 95% da capacidade!</name>
+                                            <expression>{GGDC Geral Windows:vfs.fs.size[{#FSNAME},pused].last()}&gt;=95</expression>
+                                        </dependency>
+                                    </dependencies>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=95</expression>
+                                    <name>DISCO: Unidade {#FSNAME} atingiu 95% da capacidade!</name>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                    </item_prototypes>
+                </discovery_rule>
+            </discovery_rules>
+        </template>
+    </templates>
+</zabbix_export>
