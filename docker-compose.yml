@@ -127,9 +127,6 @@ services:
 
   zabbix-snmptraps:
     image: docker.io/zabbix/zabbix-snmptraps:alpine-6.0-latest
-    profiles:
-      - full
-      - all
     ports:
       - "162:1162/udp"
     volumes:
@@ -214,7 +211,6 @@ services:
   zabbix-agent:
     image: docker.io/zabbix/zabbix-agent2:alpine-6.0-latest
     profiles:
-      - full
       - all
     ports:
      - "10050:10050"

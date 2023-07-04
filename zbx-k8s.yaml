@@ -1,0 +1,1131 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: grafana
+  name: grafana
+spec:
+  ports:
+    - name: "3000"
+      port: 3000
+      targetPort: 3000
+  selector:
+    io.kompose.service: grafana
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: zabbix-agentd
+    com.zabbix.description: Zabbix agent
+    com.zabbix.os: ubuntu
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-agent
+  name: zabbix-agent
+spec:
+  ports:
+    - name: "10050"
+      port: 10050
+      targetPort: 10050
+  selector:
+    io.kompose.service: zabbix-agent
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: zabbix-server
+    com.zabbix.dbtype: mysql
+    com.zabbix.description: Zabbix server with MySQL database support
+    com.zabbix.os: ubuntu
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server
+  name: zabbix-server
+spec:
+  ports:
+    - name: "10051"
+      port: 10051
+      targetPort: 10051
+  selector:
+    io.kompose.service: zabbix-server
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: snmptraps
+    com.zabbix.description: Zabbix snmptraps
+    com.zabbix.os: ubuntu
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-snmptraps
+  name: zabbix-snmptraps
+spec:
+  ports:
+    - name: "162"
+      port: 162
+      protocol: UDP
+      targetPort: 1162
+  selector:
+    io.kompose.service: zabbix-snmptraps
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: zabbix-frontend
+    com.zabbix.dbtype: mysql
+    com.zabbix.description: Zabbix frontend on Nginx web-server with MySQL database support
+    com.zabbix.os: ubuntu
+    com.zabbix.webserver: nginx
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-web-nginx-mysql
+  name: zabbix-web-nginx-mysql
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+    - name: "8443"
+      port: 8443
+      targetPort: 8443
+  selector:
+    io.kompose.service: zabbix-web-nginx-mysql
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: web-service
+    com.zabbix.description: Zabbix web service
+    com.zabbix.os: ubuntu
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-web-service
+  name: zabbix-web-service
+spec:
+  ports:
+    - name: "10053"
+      port: 10053
+      targetPort: 10053
+  selector:
+    io.kompose.service: zabbix-web-service
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: db-data-mysql-claim0
+  name: db-data-mysql-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  creationTimestamp: null
+  name: zbx-docker-default
+spec:
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              io.kompose.network/zbx-docker-default: "true"
+  podSelector:
+    matchLabels:
+      io.kompose.network/zbx-docker-default: "true"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: grafana
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: grafana
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/zbx-docker-zbx-net-backend: "true"
+        io.kompose.network/zbx-docker-zbx-net-frontend: "true"
+        io.kompose.service: grafana
+    spec:
+      containers:
+        - env:
+            - name: GF_INSTALL_PLUGINS
+              value: alexanderzobnin-zabbix-app
+          image: docker.io/grafana/grafana:latest
+          name: grafana
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: 700m
+              memory: "1073741824"
+            requests:
+              cpu: 500m
+              memory: "536870912"
+          volumeMounts:
+            - mountPath: /etc/grafana/provisioning/datasources
+              name: grafana-claim0
+            - mountPath: /var/lib/grafana
+              name: grafana-data
+      restartPolicy: Always
+      volumes:
+        - name: grafana-claim0
+          persistentVolumeClaim:
+            claimName: grafana-claim0
+        - name: grafana-data
+          persistentVolumeClaim:
+            claimName: grafana-data
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: grafana-claim0
+  name: grafana-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: grafana-data
+  name: grafana-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  creationTimestamp: null
+  name: zbx-docker-zbx-net-frontend
+spec:
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              io.kompose.network/zbx-docker-zbx-net-frontend: "true"
+  podSelector:
+    matchLabels:
+      io.kompose.network/zbx-docker-zbx-net-frontend: "true"
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  creationTimestamp: null
+  name: zbx-docker-zbx-net-backend
+spec:
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              io.kompose.network/zbx-docker-zbx-net-backend: "true"
+  podSelector:
+    matchLabels:
+      io.kompose.network/zbx-docker-zbx-net-backend: "true"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mysql-server
+  name: mysql-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: mysql-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/zbx-docker-zbx-net-backend: "true"
+        io.kompose.service: mysql-server
+    spec:
+      containers:
+        - args:
+            - mysqld
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_bin
+            - --default-authentication-plugin=mysql_native_password
+          env:
+            - name: MYSQL_PASSWORD
+              value: ${MYSQL_PASSWORD}
+            - name: MYSQL_ROOT_PASSWORD
+              value: ${MYSQL_ROOT_PASSWORD}
+            - name: MYSQL_USER
+              value: ${MYSQL_USER}
+          image: docker.io/mysql:8.0-oracle
+          name: mysql-server
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-server-claim0
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: mysql-server-claim0
+          persistentVolumeClaim:
+            claimName: mysql-server-claim0
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mysql-server-claim0
+  name: mysql-server-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: zabbix-agentd
+    com.zabbix.description: Zabbix agent
+    com.zabbix.os: ubuntu
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-agent
+  name: zabbix-agent
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: zabbix-agent
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.network/zbx-docker-zbx-net-backend: "true"
+        io.kompose.service: zabbix-agent
+    spec:
+      containers:
+        - env:
+            - name: ZBX_HOSTNAME
+              value: agent-host
+            - name: ZBX_SERVER_HOST
+              value: zabbix-server
+          image: docker.io/zabbix/zabbix-agent2:alpine-6.0-latest
+          name: zabbix-agent
+          ports:
+            - containerPort: 10050
+          resources:
+            limits:
+              cpu: 200m
+              memory: "134217728"
+            requests:
+              cpu: 100m
+              memory: "67108864"
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /etc/localtime
+              name: zabbix-agent-claim0
+              readOnly: true
+            - mountPath: /etc/zabbix/zabbix_agentd.d
+              name: zabbix-agent-claim1
+              readOnly: true
+            - mountPath: /var/lib/zabbix/modules
+              name: zabbix-agent-claim2
+              readOnly: true
+            - mountPath: /var/lib/zabbix/enc
+              name: zabbix-agent-claim3
+              readOnly: true
+            - mountPath: /var/lib/zabbix/ssh_keys
+              name: zabbix-agent-claim4
+              readOnly: true
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 5
+      volumes:
+        - name: zabbix-agent-claim0
+          persistentVolumeClaim:
+            claimName: zabbix-agent-claim0
+            readOnly: true
+        - name: zabbix-agent-claim1
+          persistentVolumeClaim:
+            claimName: zabbix-agent-claim1
+            readOnly: true
+        - name: zabbix-agent-claim2
+          persistentVolumeClaim:
+            claimName: zabbix-agent-claim2
+            readOnly: true
+        - name: zabbix-agent-claim3
+          persistentVolumeClaim:
+            claimName: zabbix-agent-claim3
+            readOnly: true
+        - name: zabbix-agent-claim4
+          persistentVolumeClaim:
+            claimName: zabbix-agent-claim4
+            readOnly: true
+  updateStrategy: {}
+status:
+  currentNumberScheduled: 0
+  desiredNumberScheduled: 0
+  numberMisscheduled: 0
+  numberReady: 0
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-agent-claim0
+  name: zabbix-agent-claim0
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-agent-claim1
+  name: zabbix-agent-claim1
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-agent-claim2
+  name: zabbix-agent-claim2
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-agent-claim3
+  name: zabbix-agent-claim3
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-agent-claim4
+  name: zabbix-agent-claim4
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: zabbix-server
+    com.zabbix.dbtype: mysql
+    com.zabbix.description: Zabbix server with MySQL database support
+    com.zabbix.os: ubuntu
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server
+  name: zabbix-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: zabbix-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        com.zabbix.company: Zabbix LLC
+        com.zabbix.component: zabbix-server
+        com.zabbix.dbtype: mysql
+        com.zabbix.description: Zabbix server with MySQL database support
+        com.zabbix.os: ubuntu
+        kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/zbx-docker-zbx-net-backend: "true"
+        io.kompose.network/zbx-docker-zbx-net-frontend: "true"
+        io.kompose.service: zabbix-server
+    spec:
+      containers:
+        - env:
+            - name: MYSQL_PASSWORD
+              value: ${MYSQL_PASSWORD}
+            - name: MYSQL_ROOT_PASSWORD
+              value: ${MYSQL_ROOT_PASSWORD}
+            - name: MYSQL_USER
+              value: ${MYSQL_USER}
+            - name: ZBX_ENABLE_SNMP_TRAPS
+              value: "true"
+          image: docker.io/zabbix/zabbix-server-mysql:alpine-6.0-latest
+          name: zabbix-server
+          ports:
+            - containerPort: 10051
+          resources:
+            limits:
+              cpu: 700m
+              memory: "1073741824"
+            requests:
+              cpu: 500m
+              memory: "536870912"
+          volumeMounts:
+            - mountPath: /etc/localtime
+              name: zabbix-server-claim0
+              readOnly: true
+            - mountPath: /usr/lib/zabbix/alertscripts
+              name: zabbix-server-claim1
+              readOnly: true
+            - mountPath: /usr/lib/zabbix/externalscripts
+              name: zabbix-server-claim2
+              readOnly: true
+            - mountPath: /var/lib/zabbix/dbscripts
+              name: zabbix-server-claim3
+              readOnly: true
+            - mountPath: /var/lib/zabbix/export
+              name: zabbix-server-claim4
+            - mountPath: /var/lib/zabbix/modules
+              name: zabbix-server-claim5
+              readOnly: true
+            - mountPath: /var/lib/zabbix/enc
+              name: zabbix-server-claim6
+              readOnly: true
+            - mountPath: /var/lib/zabbix/ssh_keys
+              name: zabbix-server-claim7
+              readOnly: true
+            - mountPath: /var/lib/zabbix/mibs
+              name: zabbix-server-claim8
+              readOnly: true
+            - mountPath: /var/lib/zabbix/snmptraps
+              name: snmptraps
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: zabbix-server-claim0
+          persistentVolumeClaim:
+            claimName: zabbix-server-claim0
+            readOnly: true
+        - name: zabbix-server-claim1
+          persistentVolumeClaim:
+            claimName: zabbix-server-claim1
+            readOnly: true
+        - name: zabbix-server-claim2
+          persistentVolumeClaim:
+            claimName: zabbix-server-claim2
+            readOnly: true
+        - name: zabbix-server-claim3
+          persistentVolumeClaim:
+            claimName: zabbix-server-claim3
+            readOnly: true
+        - name: zabbix-server-claim4
+          persistentVolumeClaim:
+            claimName: zabbix-server-claim4
+        - name: zabbix-server-claim5
+          persistentVolumeClaim:
+            claimName: zabbix-server-claim5
+            readOnly: true
+        - name: zabbix-server-claim6
+          persistentVolumeClaim:
+            claimName: zabbix-server-claim6
+            readOnly: true
+        - name: zabbix-server-claim7
+          persistentVolumeClaim:
+            claimName: zabbix-server-claim7
+            readOnly: true
+        - name: zabbix-server-claim8
+          persistentVolumeClaim:
+            claimName: zabbix-server-claim8
+            readOnly: true
+        - name: snmptraps
+          persistentVolumeClaim:
+            claimName: snmptraps
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server-claim0
+  name: zabbix-server-claim0
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server-claim1
+  name: zabbix-server-claim1
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server-claim2
+  name: zabbix-server-claim2
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server-claim3
+  name: zabbix-server-claim3
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server-claim4
+  name: zabbix-server-claim4
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server-claim5
+  name: zabbix-server-claim5
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server-claim6
+  name: zabbix-server-claim6
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server-claim7
+  name: zabbix-server-claim7
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-server-claim8
+  name: zabbix-server-claim8
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: snmptraps
+  name: snmptraps
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: snmptraps
+    com.zabbix.description: Zabbix snmptraps
+    com.zabbix.os: ubuntu
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-snmptraps
+  name: zabbix-snmptraps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: zabbix-snmptraps
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        com.zabbix.company: Zabbix LLC
+        com.zabbix.component: snmptraps
+        com.zabbix.description: Zabbix snmptraps
+        com.zabbix.os: ubuntu
+        kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/zbx-docker-zbx-net-backend: "true"
+        io.kompose.network/zbx-docker-zbx-net-frontend: "true"
+        io.kompose.service: zabbix-snmptraps
+    spec:
+      containers:
+        - image: docker.io/zabbix/zabbix-snmptraps:alpine-6.0-latest
+          name: zabbix-snmptraps
+          ports:
+            - containerPort: 1162
+              protocol: UDP
+          resources:
+            limits:
+              cpu: 500m
+              memory: "268435456"
+            requests:
+              cpu: 250m
+              memory: "134217728"
+          volumeMounts:
+            - mountPath: /var/lib/zabbix/snmptraps
+              name: snmptraps
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 5
+      volumes:
+        - name: snmptraps
+          persistentVolumeClaim:
+            claimName: snmptraps
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: zabbix-frontend
+    com.zabbix.dbtype: mysql
+    com.zabbix.description: Zabbix frontend on Nginx web-server with MySQL database support
+    com.zabbix.os: ubuntu
+    com.zabbix.webserver: nginx
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-web-nginx-mysql
+  name: zabbix-web-nginx-mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: zabbix-web-nginx-mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        com.zabbix.company: Zabbix LLC
+        com.zabbix.component: zabbix-frontend
+        com.zabbix.dbtype: mysql
+        com.zabbix.description: Zabbix frontend on Nginx web-server with MySQL database support
+        com.zabbix.os: ubuntu
+        com.zabbix.webserver: nginx
+        kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/zbx-docker-zbx-net-backend: "true"
+        io.kompose.network/zbx-docker-zbx-net-frontend: "true"
+        io.kompose.service: zabbix-web-nginx-mysql
+    spec:
+      containers:
+        - env:
+            - name: MYSQL_PASSWORD
+              value: ${MYSQL_PASSWORD}
+            - name: MYSQL_USER
+              value: ${MYSQL_USER}
+            - name: ZBX_SERVER_HOST
+              value: zabbix-server
+            - name: ZBX_SERVER_NAME
+              value: Composed installation
+          image: docker.io/zabbix/zabbix-web-nginx-mysql:alpine-6.0-latest
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -f
+                - http://localhost:8080/ping
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          name: zabbix-web-nginx-mysql
+          ports:
+            - containerPort: 8080
+            - containerPort: 8443
+          resources:
+            limits:
+              cpu: 700m
+              memory: "536870912"
+            requests:
+              cpu: 500m
+              memory: "268435456"
+          volumeMounts:
+            - mountPath: /etc/localtime
+              name: zabbix-web-nginx-mysql-claim0
+              readOnly: true
+            - mountPath: /etc/ssl/nginx
+              name: zabbix-web-nginx-mysql-claim1
+              readOnly: true
+            - mountPath: /usr/share/zabbix/modules
+              name: zabbix-web-nginx-mysql-claim2
+              readOnly: true
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: zabbix-web-nginx-mysql-claim0
+          persistentVolumeClaim:
+            claimName: zabbix-web-nginx-mysql-claim0
+            readOnly: true
+        - name: zabbix-web-nginx-mysql-claim1
+          persistentVolumeClaim:
+            claimName: zabbix-web-nginx-mysql-claim1
+            readOnly: true
+        - name: zabbix-web-nginx-mysql-claim2
+          persistentVolumeClaim:
+            claimName: zabbix-web-nginx-mysql-claim2
+            readOnly: true
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-web-nginx-mysql-claim0
+  name: zabbix-web-nginx-mysql-claim0
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-web-nginx-mysql-claim1
+  name: zabbix-web-nginx-mysql-claim1
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-web-nginx-mysql-claim2
+  name: zabbix-web-nginx-mysql-claim2
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    com.zabbix.company: Zabbix LLC
+    com.zabbix.component: web-service
+    com.zabbix.description: Zabbix web service
+    com.zabbix.os: ubuntu
+    kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-web-service
+  name: zabbix-web-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: zabbix-web-service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        com.zabbix.company: Zabbix LLC
+        com.zabbix.component: web-service
+        com.zabbix.description: Zabbix web service
+        com.zabbix.os: ubuntu
+        kompose.cmd: kompose convert -f docker-compose.yml -o zbx-k8s.yaml
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/zbx-docker-zbx-net-backend: "true"
+        io.kompose.service: zabbix-web-service
+    spec:
+      containers:
+        - env:
+            - name: ZBX_ALLOWEDIP
+              value: zabbix-server
+          image: docker.io/zabbix/zabbix-web-service:alpine-6.0-latest
+          name: zabbix-web-service
+          ports:
+            - containerPort: 10053
+          resources:
+            limits:
+              cpu: 500m
+              memory: "536870912"
+            requests:
+              cpu: 250m
+              memory: "268435456"
+          volumeMounts:
+            - mountPath: /var/lib/zabbix/enc
+              name: zabbix-web-service-claim0
+              readOnly: true
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 5
+      volumes:
+        - name: zabbix-web-service-claim0
+          persistentVolumeClaim:
+            claimName: zabbix-web-service-claim0
+            readOnly: true
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: zabbix-web-service-claim0
+  name: zabbix-web-service-claim0
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
