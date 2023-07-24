@@ -272,6 +272,7 @@ services:
       zbx_net_frontend:
     environment:
       - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app,grafana-clock-panel
+      - TZ=America/Sao_Paulo
       
   db_data_mysql:
     image: docker.io/busybox
