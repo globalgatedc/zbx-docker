@@ -53,6 +53,8 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - ZBX_ENABLE_SNMP_TRAPS=true
+      - TZ=America/Sao_Paulo
+      - PHP_TZ=America/Sao_Paulo
     depends_on:
       - mysql-server
     networks:
