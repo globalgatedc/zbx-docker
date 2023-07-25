@@ -21,6 +21,7 @@ volumes:
 
 services:
   zabbix-server:
+    restart: always
     image: docker.io/zabbix/zabbix-server-mysql:alpine-6.0-latest
     ports:
       - "10051:10051"
@@ -80,6 +81,7 @@ services:
 
   zabbix-web-nginx-mysql:
     image: docker.io/zabbix/zabbix-web-nginx-mysql:alpine-6.0-latest
+    restart: always
     ports:
       - "8080:8080"
       - "8443:8443"
@@ -129,6 +131,7 @@ services:
 
   zabbix-snmptraps:
     image: docker.io/zabbix/zabbix-snmptraps:alpine-6.0-latest
+    restart: always
     ports:
       - "162:1162/udp"
     volumes:
@@ -155,6 +158,7 @@ services:
 
   zabbix-web-service:
     image: docker.io/zabbix/zabbix-web-service:alpine-6.0-latest
+    restart: always
     profiles:
       - all
     ports:
@@ -187,6 +191,7 @@ services:
 
   mysql-server:
     image: docker.io/mysql:8.0-oracle
+    restart: always
     command:
       - mysqld
       - --character-set-server=utf8mb4
@@ -212,6 +217,7 @@ services:
 
   zabbix-agent:
     image: docker.io/zabbix/zabbix-agent2:alpine-6.0-latest
+    restart: always
     profiles:
       - all
     ports:
