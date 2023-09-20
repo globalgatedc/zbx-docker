@@ -6,14 +6,14 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.16.238.0/24
-  zbx_net_backend:
-    driver: bridge
-    internal: true
-    ipam:
-      driver: default
-      config:
-      - subnet: 172.16.239.0/24
+      - subnet: 172.16.237.0/24
+        #  zbx_net_backend:
+        #    driver: bridge
+        #    internal: true
+        #    ipam:
+        #      driver: default
+        #      config:
+        #      - subnet: 172.16.239.0/24
 
 volumes:
   snmptraps:
@@ -28,14 +28,14 @@ services:
       - "10051:10051"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./dados/usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts:ro
-      - ./dados/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
-      - ./dados/var/lib/zabbix/dbscripts:/var/lib/zabbix/dbscripts:ro
-      - ./dados/var/lib/zabbix/export:/var/lib/zabbix/export:rw
-      - ./dados/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
-      - ./dados/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
-      - ./dados/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
-      - ./dados/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
+      - /dados/usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts:ro
+      - /dados/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
+      - /dados/var/lib/zabbix/dbscripts:/var/lib/zabbix/dbscripts:ro
+      - /dados/var/lib/zabbix/export:/var/lib/zabbix/export:rw
+      - /dados/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
+      - /dados/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
+      - /dados/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+      - /dados/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
       - snmptraps:/var/lib/zabbix/snmptraps:rw
     ulimits:
       nproc: 65535
@@ -60,13 +60,12 @@ services:
     depends_on:
       - mysql-server
     networks:
-      zbx_net_backend:
+      zbx_net_frontend:
         aliases:
           - zabbix-server
           - zabbix-server-mysql
           - zabbix-server-ubuntu-mysql
           - zabbix-server-mysql-ubuntu
-      zbx_net_frontend:
     stop_grace_period: 30s
     sysctls:
       - net.ipv4.ip_local_port_range=1024 65000
@@ -89,8 +88,8 @@ services:
       - "8443:8443"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./dados/etc/ssl/nginx:/etc/ssl/nginx:ro
-      - ./dados/usr/share/zabbix/modules/:/usr/share/zabbix/modules/:ro
+      - /dados/etc/ssl/nginx:/etc/ssl/nginx:ro
+      - /dados/usr/share/zabbix/modules/:/usr/share/zabbix/modules/:ro
     deploy:
       resources:
         limits:
@@ -114,12 +113,11 @@ services:
       retries: 3
       start_period: 30s
     networks:
-      zbx_net_backend:
+      zbx_net_frontend:
         aliases:
         - zabbix-web-nginx-mysql
         - zabbix-web-nginx-ubuntu-mysql
         - zabbix-web-nginx-mysql-ubuntu
-      zbx_net_frontend:
     stop_grace_period: 10s
     sysctls:
     - net.core.somaxconn=65535
@@ -151,7 +149,6 @@ services:
       zbx_net_frontend:
         aliases:
         - zabbix-snmptraps
-      zbx_net_backend:
     stop_grace_period: 5s
     labels:
       com.zabbix.description: "Zabbix snmptraps"
@@ -168,7 +165,7 @@ services:
     ports:
        - "10053:10053"
     volumes:
-      - ./dados/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
+      - /dados/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
     security_opt:
      - seccomp:./env_vars/chrome_dp.json
     deploy:
@@ -182,7 +179,7 @@ services:
     environment:
       - ZBX_ALLOWEDIP=zabbix-server
     networks:
-      zbx_net_backend:
+      zbx_net_frontend:
         aliases:
         - zabbix-web-service
         - zabbix-web-service-ubuntu
@@ -203,14 +200,14 @@ services:
       - --collation-server=utf8mb4_bin
       - --default-authentication-plugin=mysql_native_password
     volumes:
-      - ./dados/var/lib/mysql:/var/lib/mysql:rw
+      - /dados/var/lib/mysql:/var/lib/mysql:rw
     environment:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     stop_grace_period: 1m
     networks:
-      zbx_net_backend:
+      zbx_net_frontend:
         aliases:
         - mysql-server
         - zabbix-database
@@ -226,10 +223,10 @@ services:
      - "10050:10050"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./dados/etc/zabbix/zabbix_agentd.d:/etc/zabbix/zabbix_agentd.d:ro
-      - ./dados/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
-      - ./dados/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
-      - ./dados/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+      - /dados/etc/zabbix/zabbix_agentd.d:/etc/zabbix/zabbix_agentd.d:ro
+      - /dados/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
+      - /dados/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
+      - /dados/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
     deploy:
       resources:
         limits:
@@ -245,7 +242,7 @@ services:
     privileged: true
     pid: "host"
     networks:
-      zbx_net_backend:
+      zbx_net_frontend:
         aliases:
         - zabbix-agent
         - zabbix-agent-passive
@@ -275,10 +272,9 @@ services:
           cpus: '0.5'
           memory: 512M
     networks:
-      zbx_net_backend:
+      zbx_net_frontend:
         aliases:
         - grafana-server
-      zbx_net_frontend:
     environment:
       - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app,grafana-clock-panel
       - TZ=America/Sao_Paulo
@@ -287,4 +283,4 @@ services:
     image: docker.io/busybox
     pull_policy: always  # Pull the latest image always
     volumes:
-      - ./dados/var/lib/mysql:/var/lib/mysql:rw
+      - /dados/var/lib/mysql:/var/lib/mysql:rw
