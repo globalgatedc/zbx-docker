@@ -23,6 +23,7 @@ services:
   zabbix-server:
     restart: always
     image: docker.io/zabbix/zabbix-server-mysql:alpine-6.0-latest
+    pull_policy: always  # Pull the latest image always
     ports:
       - "10051:10051"
     volumes:
@@ -81,6 +82,7 @@ services:
 
   zabbix-web-nginx-mysql:
     image: docker.io/zabbix/zabbix-web-nginx-mysql:alpine-6.0-latest
+    pull_policy: always  # Pull the latest image always
     restart: always
     ports:
       - "8080:8080"
@@ -131,6 +133,7 @@ services:
 
   zabbix-snmptraps:
     image: docker.io/zabbix/zabbix-snmptraps:alpine-6.0-latest
+    pull_policy: always  # Pull the latest image always
     restart: always
     ports:
       - "162:1162/udp"
@@ -158,6 +161,7 @@ services:
 
   zabbix-web-service:
     image: docker.io/zabbix/zabbix-web-service:alpine-6.0-latest
+    pull_policy: always  # Pull the latest image always
     restart: always
     profiles:
       - all
@@ -191,16 +195,13 @@ services:
 
   mysql-server:
     image: docker.io/mysql:8.0-oracle
+    pull_policy: always  # Pull the latest image always
     restart: always
     command:
       - mysqld
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_bin
       - --default-authentication-plugin=mysql_native_password
-    #   - --require-secure-transport
-    #   - --ssl-ca=/run/secrets/root-ca.pem
-    #   - --ssl-cert=/run/secrets/server-cert.pem
-    #   - --ssl-key=/run/secrets/server-key.pem
     volumes:
       - ./dados/var/lib/mysql:/var/lib/mysql:rw
     environment:
@@ -217,6 +218,7 @@ services:
 
   zabbix-agent:
     image: docker.io/zabbix/zabbix-agent2:alpine-6.0-latest
+    pull_policy: always  # Pull the latest image always
     restart: always
     profiles:
       - all
@@ -257,6 +259,7 @@ services:
       
   grafana:
     image: docker.io/grafana/grafana:latest
+    pull_policy: always  # Pull the latest image always
     ports:
       - 3000:3000
     restart: always
@@ -282,5 +285,6 @@ services:
       
   db_data_mysql:
     image: docker.io/busybox
+    pull_policy: always  # Pull the latest image always
     volumes:
       - ./dados/var/lib/mysql:/var/lib/mysql:rw
