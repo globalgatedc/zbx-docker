@@ -256,7 +256,7 @@ services:
       com.zabbix.company: "Zabbix LLC"
       com.zabbix.component: "zabbix-agentd"
       com.zabbix.os: "ubuntu"
-      
+
   grafana:
     image: docker.io/grafana/grafana:latest
     pull_policy: always  # Pull the latest image always
@@ -282,7 +282,7 @@ services:
     environment:
       - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app,grafana-clock-panel
       - TZ=America/Sao_Paulo
-      
+
   db_data_mysql:
     image: docker.io/busybox
     pull_policy: always  # Pull the latest image always
